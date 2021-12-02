@@ -83,7 +83,11 @@ def flashcard(model=[],label=[]):
         if st.button('Take picture:)'):
 
             # print is visible in the server output, not in the page
-            camera = cv2.VideoCapture(0)
+            @st.cache(allow_output_mutation=True)
+            def get_cap():
+                return cv2.VideoCapture(0)
+
+            camera = get_cap()
             hand_detector = HandDetector(detectionCon=0.5, maxHands=1)
 
             # success, img = cap.read()
