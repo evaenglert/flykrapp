@@ -8,14 +8,39 @@ from typing import TypeVar
 import dataclasses
 import cv2
 from cvzone.HandTrackingModule import HandDetector
-import tensorflow
-import tensorflow as tf
-from tensorflow.python import tf2
+# import tensorflow
+# import tensorflow as tf
+# from tensorflow.python import tf2
 import pickle
 
 HI = 1000
-
 StateT = TypeVar('StateT')
+import meta
+from pathlib import Path
+import matplotlib.pyplot as plt
+import queue
+import av
+from streamlit_webrtc import (
+    RTCConfiguration,
+    VideoProcessorBase,
+    WebRtcMode,
+    webrtc_streamer,
+)
+
+#Import for Deep learning model
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+#Import for handling image
+import cv2
+from cvzone.HandTrackingModule import HandDetector
+
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{
+        "urls": ["stun:stun.l.google.com:19302"]
+    }]})
+
+# CWD path
+HERE = Path(__file__).parent
 
 
 def persistent_game_state(initial_state: StateT) -> StateT:
@@ -86,18 +111,26 @@ def flashcard(model=[],label=[]):
             # print is visible in the server output, not in the page
             camera = cv2.VideoCapture(0)
             hand_detector = HandDetector(detectionCon=0.5, maxHands=1)
+            def recv(frame: av.VideoFrame) -> av.VideoFrame:
+                image = frame.to_ndarray(format="rgb24")
+                # im = get_image(image)
+                # hands = self.find_hands(image)
+                return image
+            # av.VideoFrame.from_ndarray(image, format="rgb24")
 
             # success, img = cap.read()
             def get_image():
                 hand = None
                 while hand is None:
-                    retval, im = camera.read()
-                    hand = hand_detector.findHands(im, draw=False)
-                return im
-            for i in range(30):
-                temp = camera.read()
+                    # retval, im = camera.read()
+                    image = recv()
+                    hand = hand_detector.findHands(image, draw=False)
+                    bbox = hand[0]["bbox"]
+                return image, bbox
+            # for i in range(30):
+            #     temp = camera.read()
 
-            img = get_image()
+            img, bbox = get_image()
 
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             # st.image(img)
@@ -105,8 +138,8 @@ def flashcard(model=[],label=[]):
             camera.release()
             cv2.destroyAllWindows()
 
-            hand = hand_detector.findHands(img, draw=False)
-            bbox = hand[0]["bbox"]
+            # hand = hand_detector.findHands(img, draw=False)
+            # bbox = hand[0]["bbox"]
             x, y, w, h = bbox
             # image_to_classify = img[y:y+h, x:x+w]
 
