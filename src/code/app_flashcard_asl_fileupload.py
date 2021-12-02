@@ -27,8 +27,8 @@ def load_image(img):
     return image
 
 
-all_signs = ["a", "b", "o", "5", "0", "c"]
-#all_signs = np.load("saved_models/asl_class_names2.npy")
+# all_signs = ["a", "b", "o", "5", "0", "c"]
+all_signs = np.load("saved_models/asl_class_names2.npy")
 
 letter_to_guess = all_signs[random.randint(0, len(all_signs)-1)]
 
